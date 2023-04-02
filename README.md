@@ -108,6 +108,10 @@ To set up Docker and Nightscout on your Synology Drive, follow these steps:
 
 1. Log in to your Synology Drive via SSH. You can use a program like PuTTY or "ssh" command in the windows terminal to do this.
 
+   ```sh
+   ssh [Drive name or IP] -u [UserName]
+   ```
+
 2. Create a new directory for Docker by typing the following command:
 
    ```sh
@@ -267,6 +271,10 @@ You still need a DuckDns account & domain name to access your installation. [Fol
 1. Your still need to [configuring your router for port forwarding](#configuring-router-for-port-forwarding). However, still we won't expose the port 443 of the Synology Drive, we need to redirect port 443 (external) to another free port number on the Synology Drive. We'll use port 4443 in the current sample.
 
 2. Log in to your Synology Drive via SSH. You can use a program like PuTTY or "ssh" command in the windows terminal to do this.
+
+   ```sh
+   ssh [Drive name or IP] -u [UserName]
+   ```
 
 3. Create a new directory for Docker by typing the following command:
 
