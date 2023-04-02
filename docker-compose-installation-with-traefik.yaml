@@ -1,0 +1,84 @@
+services:
+  database:
+    image: mongo:4.4
+    container_name: Nightscout-Db
+    volumes:
+      - /volume1/docker/mongodb-data:/data/db:cached
+
+  nightscout:
+    image: 'nightscout/cgm-remote-monitor:latest_dev'
+    container_name: Nightscout
+    depends_on:
+        - database
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.nightscout.rule=Host(`johnnysnightscout.duckdns.org`)'
+      - 'traefik.http.routers.nightscout.tls.certresolver=le'
+      - 'traefik.port=1337'
+    environment:
+      - ALARM_URGENT_HIGH=off
+      - ALARM_HIGH=off
+      - ALARM_LOW=off
+      - ALARM_TIMEAGO_WARN=off
+      - ALARM_TIMEAGO_URGENT=off
+      - ALARM_URGENT_LOW=off
+      - API_SECRET=myapisecret
+      - AUTH_DEFAULT_ROLES=denied
+      - BASAL_RENDER=icicle
+      - BRIDGE_PASSWORD=mybridgepassword
+      - BRIDGE_SERVER=EU
+      - BRIDGE_USER_NAME=mybridgeusername
+      - CUSTOM_TITLE=Johnny's Nightscout
+      - DEVICESTATUS_ADVANCED=true
+      - DISPLAY_UNITS=mmol
+      - ENABLE=bridge careportal basal dbsize rawbg iob maker cob bwp cage iage sage boluscalc pushover treatmentnotify loop pump profile food openaps bage alexa override speech cors
+      - INSECURE_USE_HTTP=true
+      - LANGUAGE=fr
+      - LOOP_APNS_KEY=
+       -----BEGIN PRIVATE KEY-----
+       
+       ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ22Ys7mCQ9x4I
+       
+       ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZfYNJz3IC2Vfj
+       
+       ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZb5dBysUjs87t
+       
+       px56uZHQ
+       
+       -----END PRIVATE KEY-----
+      - LOOP_APNS_KEY_ID=myapnskeyid
+      - LOOP_DEVELOPER_TEAM_ID=mydeveloperteamid
+      - LOOP_ENABLE_ALERTS=true
+      - NIGHT_MODE=off
+      - MONGO_CONNECTION=mongodb://database:27017/nightscout
+      - SHOW_FORECAST=loop
+      - SHOW_PLUGINS=careportal boluscalc food iob cob basal pump loop bridge
+      - TIME_FORMAT=24
+      - THEME=colors
+      - VIRTUAL_HOST=johnnysnightscout.duckdns.org
+    links:
+      - database
+
+  traefik:
+    image: 'traefik:latest'
+    container_name: 'traefik'
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - "--tracing=true"
+      - "--accesslog=true"
+      - "--metrics"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - '--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.le.acme.email=youremailaddress@domain.com'
+    ports:
+      - '4443:443'
+      - '8080:8080'
+    volumes:
+      - './letsencrypt:/letsencrypt'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
