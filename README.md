@@ -128,7 +128,7 @@ To set up Docker and Nightscout on your Synology Drive, follow these steps:
    - BRIDGE_SERVER=`EU`
    - BRIDGE_USER_NAME=`mybridgeusername`
    - CUSTOM_TITLE=`Johnny's Nightscout`
-   - DISPLAY_UNITS=`mg/dL`
+   - DISPLAY_UNITS=`mmol`
    - LOOP_APNS_KEY= 
    - LOOP_APNS_KEY_ID=`myapnskeyid`
    - LOOP_DEVELOPER_TEAM_ID=`mydeveloperteamid`
