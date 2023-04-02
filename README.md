@@ -11,17 +11,21 @@ This guide will help you set up Nightscout on a Synology Drive, so you can host 
 5. [Generating a Let's Encrypt Certificate](#generating-a-lets-encrypt-certificate)
 6. [Setting up Docker and Nightscout](#setting-up-docker-and-nightscout)
 7. [Dual installation](#dual-installation)
-8. [Creating a DuckDNS Account and Domain Name](#creating-a-duckdns-account-and-domain-name-1)
-9. [Creating a Reverse Proxy](#creating-a-reverse-proxy-1)
-10. [Generating a Let's Encrypt Certificate](#generating-a-lets-encrypt-certificate-1)
+    + [Creating a new Domain Name](#creating-a-new-domain-name)
+    + [Creating a new Reverse Proxy](#creating-a-new-reverse-proxy)
+    + [Generating a new Let's Encrypt Certificate](#generating-a-new-lets-encrypt-certificate)
+    + [Nightscout installation](#nightscout-installation)
+8. [Installation of Nightscout sites using Traefik](#installation-of-nightscout-sites-using-traefik)
+    + [Create DuckDns domain name](#create-duckdns-domain-name)
+    + [Traefik Dashboard](#traefik-dashboard)
 
 ## Prerequisites
 
 Before starting the setup process, you will need:
 
-- A Synology Drive running Docker (See marketplace in Synology drive if not installed)
-- Access to your router to create a forwarding port rule to redirect port 443 to your Synology Drive
-- Basic knowledge of the Synology Drive control panel
++ A Synology Drive running Docker (See marketplace in Synology drive if not installed)
++ Access to your router to create a forwarding port rule to redirect port 443 to your Synology Drive
++ Basic knowledge of the Synology Drive control panel
 
 ## Creating a DuckDNS Account and Domain Name
 
@@ -136,16 +140,16 @@ To set up Docker and Nightscout on your Synology Drive, follow these steps:
 
 7. Make sure to replace at least following environment variables with the appropriate values for your installation:
 
-   - API_SECRET=`myapisecret`
-   - BRIDGE_PASSWORD=`mybridgepassword`
-   - BRIDGE_SERVER=`EU`
-   - BRIDGE_USER_NAME=`mybridgeusername`
-   - CUSTOM_TITLE=`Johnny's Nightscout`
-   - DISPLAY_UNITS=`mmol`
-   - LOOP_APNS_KEY= `your-key`
-   - LOOP_APNS_KEY_ID=`myapnskeyid`
-   - LOOP_DEVELOPER_TEAM_ID=`mydeveloperteamid`
-   - VIRTUALHOST=`johnnysnightscout.duckdns.org`
+   + API_SECRET=`myapisecret`
+   + BRIDGE_PASSWORD=`mybridgepassword`
+   + BRIDGE_SERVER=`EU`
+   + BRIDGE_USER_NAME=`mybridgeusername`
+   + CUSTOM_TITLE=`Johnny's Nightscout`
+   + DISPLAY_UNITS=`mmol`
+   + LOOP_APNS_KEY= `your-key`
+   + LOOP_APNS_KEY_ID=`myapnskeyid`
+   + LOOP_DEVELOPER_TEAM_ID=`mydeveloperteamid`
+   + VIRTUALHOST=`johnnysnightscout.duckdns.org`
 
    Please note that the LOOP_APNS_KEY should not be pasted as-is. Every end line should be doubled.
 
@@ -229,14 +233,14 @@ Again, each of the domain names should have their own Let's Ecrypt certificate g
 3. Finally, make sure to make the proper replacements for both kids. It's very important that Johnny's Nightscout refer to Jonny's database and the same precaution need to be made for Sophia's docker instances. Both of them can use the same LOOP APNS Keys if their Loop installation were built using the same Apple Developer licence.
 
 4. Make sure the LOOP parameter are set differently for each installation.
-   - API_SECRET: Can be the same on both installations
-   - BRIDGE_PASSWORD: Can be the same on both installations but depends on your Dexcom bridge installations
-   - BRIDGE_USER_NAME: Need to be different for each account. We don't want to mixup their bgs
-   - CUSTOM_TITLE: It's important to change the title so we know easily which Nightscout site is opened by looking on the top left corner
-   - LOOP_APNS_KEY: Can be the same on both installations
-   - LOOP_APNS_KEY_ID: Can be the same on both installations
-   - LOOP_DEVELOPER_TEAM_ID: Can be the same on both installations
-   - VIRTUALHOST: We need a different domain name for both installations
+   + API_SECRET: Can be the same on both installations
+   + BRIDGE_PASSWORD: Can be the same on both installations but depends on your Dexcom bridge installations
+   + BRIDGE_USER_NAME: Need to be different for each account. We don't want to mixup their bgs
+   + CUSTOM_TITLE: It's important to change the title so we know easily which Nightscout site is opened by looking on the top left corner
+   + LOOP_APNS_KEY: Can be the same on both installations
+   + LOOP_APNS_KEY_ID: Can be the same on both installations
+   + LOOP_DEVELOPER_TEAM_ID: Can be the same on both installations
+   + VIRTUALHOST: We need a different domain name for both installations
 
 5. Start the Docker containers by running the following command:
 
@@ -257,6 +261,8 @@ There is an alternate way to install Nightscout using a docker image named "Trae
 ### Create DuckDns domain name
 
 You still need a DuckDns account & domain name to access your installation. [Follow documentation above to do so](#creating-a-duckdns-account-and-domain-name).
+
+### Nightscout configuration with Traefik
 
 1. Your still need to [configuring your router for port forwarding](#configuring-router-for-port-forwarding). However, still we won't expose the port 443 of the Synology Drive, we need to redirect port 443 (external) to another free port number on the Synology Drive. We'll use port 4443 in the current sample.
 
@@ -322,22 +328,22 @@ You still need a DuckDns account & domain name to access your installation. [Fol
 
 10. Once modification are completed, run this command to launch all docker instances:
 
-   ```sh
-   docker-compose up -d
-   ```
+      ```sh
+      docker-compose up -d
+      ```
 
-   This will start MongoDB, Nightscout and traefik containers in the background.
+      This will start MongoDB, Nightscout and traefik containers in the background.
 
-   If you change any so the Nightscout parameters in the docker-compose file, you have to run this command line again to recreate the containers using the new parameters. Docker will only restart the containers that were changed.
+      If you change any so the Nightscout parameters in the docker-compose file, you have to run this command line again to recreate the containers using the new parameters. Docker will only restart the containers that were changed.
 
-   The internet request will be forwarded as follow:
+      The internet request will be forwarded as follow:
 
-   1. The request will hit your router on port 443 as HTTPS
-   2. The request will be redirected on the Synology Drive but on port 4443, still in HTTPS. On this port, the Synology Drive reverse proxy is **not**  running.
-   3. Traefik will catch this request and send a request internally in docker to the Nightscout instance as HTTP (Not secured) on port 1337.
-   4. Nightscout will Answer and the response will be sent.
+      1. The request will hit your router on port 443 as HTTPS
+      2. The request will be redirected on the Synology Drive but on port 4443, still in HTTPS. On this port, the Synology Drive reverse proxy is **not**  running.
+      3. Traefik will catch this request and send a request internally in docker to the Nightscout instance as HTTP (Not secured) on port 1337.
+      4. Nightscout will Answer and the response will be sent.
 
-   The first time you launch the site, it's possible that the HTTPS certificate is not generated yet. Traefik will then communicate with Let's Encrypt and, if your configurations were modified correctly, it will generate a new certificate for you. The following request will be encrypted as expected.
+      The first time you launch the site, it's possible that the HTTPS certificate is not generated yet. Traefik will then communicate with Let's Encrypt and, if your configurations were modified correctly, it will generate a new certificate for you. The following request will be encrypted as expected.
 
 ### Traefik Dashboard
 
